@@ -1,0 +1,12 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{values.name}}
+  description: Service ${{values.name}} created using Backstage software template
+  annotations:
+    #du an duoc day len github, backstage se dua vao day de lay ma nguon
+    github.com/project-slug: ${{values.owner}}/${{values.name}}
+spec:
+  type: service
+  lifecycle: production
+  owner: ${{values.owner}}

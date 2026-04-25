@@ -113,7 +113,7 @@ catalog:
   locations:
     # Local example data, file locations are relative to the backend process, typically `packages/backend`
     - type: file
-      target: ../../examples/entities.yaml
+      target: ../../../template/my-service/template.yaml
 
     # Local example template
     - type: file

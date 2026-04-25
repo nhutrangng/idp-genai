@@ -1,0 +1,14 @@
+{
+    "name":"${{values.name}}",
+    "version": "1.0.0",
+    "description": "A service Node.js is created automatically by Backstage",
+    "main":"index.js",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "author": "my-platform",
+    "license":"ISC", 
+    "dependencies": {
+        "express":"^4.19.0"
+    }
+}
