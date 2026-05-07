@@ -113,7 +113,7 @@ catalog:
   locations:
     # Local example data, file locations are relative to the backend process, typically `packages/backend`
     - type: file
-      target: ../../../template/my-service/template.yaml
+      target: ../../../templates/nodejs-service/template.yaml
 
     # Local example template
     - type: file
@@ -149,3 +149,6 @@ permission:
 mcpActions:
   name: 'My Company Backstage' # defaults to "backstage"
   description: 'Tools for managing your software catalog, creating new services from templates, and exploring your developer portal' # optional
+git add idp-backstage/app-config.yaml
+git commit --amend --no-edit
+git push --force-with-lease
