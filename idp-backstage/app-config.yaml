@@ -109,18 +109,16 @@ catalog:
     entityFilename: catalog-info.yaml
     pullRequestBranchName: backstage-integration
   rules:
-    - allow: [Component, System, API, Resource, Location]
+    - allow: [Component, System, API, Resource, Location, Template]
   locations:
     # Local example data, file locations are relative to the backend process, typically `packages/backend`
     - type: file
-      target: ../../../templates/nodejs-service/template.yaml
-
-    # Local example template
-    - type: file
-      target: ../../examples/template/template.yaml
+      target: ../../templates/nodejs-service/template.yaml
       rules:
         - allow: [Template]
 
+    # Local example template
+    
     # Local example organizational data
     - type: file
       target: ../../examples/org.yaml
@@ -143,12 +141,9 @@ kubernetes:
 # see https://backstage.io/docs/permissions/getting-started for more on the permission framework
 permission:
   # setting this to `false` will disable permissions
-  enabled: true
+  enabled: false
 
 # see https://backstage.io/docs/ai/mcp-actions for more details
 mcpActions:
   name: 'My Company Backstage' # defaults to "backstage"
   description: 'Tools for managing your software catalog, creating new services from templates, and exploring your developer portal' # optional
-git add idp-backstage/app-config.yaml
-git commit --amend --no-edit
-git push --force-with-lease
