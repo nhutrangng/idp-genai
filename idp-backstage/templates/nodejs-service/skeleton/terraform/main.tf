@@ -2,7 +2,7 @@ terraform {
   
   backend "s3" {
     bucket       = "genai-idp-tf-state-bucket"
-    key          = "${{values.component_id}}/terraform.tfstate" 
+    key          = "${{ values.name }}/terraform.tfstate"
     region       = "ap-southeast-1"
     encrypt      = true
     use_lockfile = true
