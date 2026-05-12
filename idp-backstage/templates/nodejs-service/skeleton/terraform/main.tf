@@ -1,10 +1,11 @@
 terraform {
+  
   backend "s3" {
-    bucket="genai-idp-tf-state-bucket"
-    key="${{values.component_id}}/terraform.fstate" 
-    region="ap-southeast-1"
-    dynamodb_table = "genai-idp-tf-lock"
-    encrypt = true
+    bucket       = "genai-idp-tf-state-bucket"
+    key          = "${{values.component_id}}/terraform.tfstate" 
+    region       = "ap-southeast-1"
+    encrypt      = true
+    use_lockfile = true
   }
 
   required_providers {
