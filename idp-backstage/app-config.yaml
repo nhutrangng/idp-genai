@@ -24,14 +24,14 @@ backend:
   # Used for enabling authentication, secret is shared by all backend plugins
   # See https://backstage.io/docs/auth/service-to-service-auth for
   # information on the format
-  # auth:
-  #   keys:
-  #     - secret: ${BACKEND_SECRET}
   baseUrl: http://localhost:7007
   listen:
     port: 7007
     # Uncomment the following host directive to bind to specific interfaces
     # host: 127.0.0.1
+  auth:
+    dangerouslyDisableDefaultAuthPolicy: true
+  # Legacy backend.auth.keys removed; use backend.auth.externalAccess instead
   csp:
     connect-src: ["'self'", 'http:', 'https:']
     # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
@@ -84,22 +84,12 @@ techdocs:
     type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
 
 auth:
+  environment: development
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
-    guest: {}
-  # see https://backstage.io/docs/ai/mcp-actions#client-id-metadata-documents
-  # to learn more about client id metadata documents
-  experimentalClientIdMetadataDocuments:
-    enabled: false
-    # Optional: restrict which `client_id` URLs are allowed (defaults to ['*'])
-    # allowedClientIdPatterns:
-    #   - 'https://example.com/*'
-    #   - 'https://*.trusted-domain.com/*'
-    # Optional: restrict which redirect URIs are allowed (defaults to ['*'])
-    # allowedRedirectUriPatterns:
-    #   - 'http://localhost:*'
-    #   - 'https://*.example.com/*'
+    guest:
+      dangerouslyAllowOutsideDevelopment: true
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options

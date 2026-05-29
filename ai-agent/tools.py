@@ -1,52 +1,104 @@
-import json
+# tools.py
 import os
+
 import requests
-from langchain.tools import tool
+from dotenv import load_dotenv
 
-@tool
-def trigger_backstage_template(payload: str) -> str:
-    """Sử dụng công cụ này để tạo dự án mới trên Backstage IDP. Input JSON: project_name, environment."""
-    url = "http://localhost:7007/api/scaffolder/v2/tasks"
+load_dotenv()
 
-    try:
-        data = json.loads(payload)
-    except json.JSONDecodeError:
-        return "❌ Định dạng input không hợp lệ. Vui lòng gửi JSON với project_name và environment."
 
-    project_name = data.get("project_name")
-    environment = data.get("environment", "dev")
+def trigger_backstage_template(project_name: str, environment: str = "dev") -> str:
+    """
+    Tạo dự án mới và cấp phát hạ tầng thông qua Backstage Scaffolder.
+    Gọi tool này khi người dùng muốn tạo project/service hoặc cấp phát hạ tầng.
+    """
+    base_url = os.environ.get("BACKSTAGE_URL", "http://localhost:7007")
+    url = f"{base_url}/api/scaffolder/v2/tasks"
 
-    if not project_name or not isinstance(project_name, str):
-        return "❌ Thiếu project_name hợp lệ trong input."
+    token = os.environ.get("BACKSTAGE_TOKEN")
+    if not token:
+        return "❌ Thiếu BACKSTAGE_TOKEN trong môi trường. Vui lòng cấu hình token để gọi API Backstage."
 
-    if environment not in {"dev", "staging", "prod"}:
-        return "❌ Environment phải là dev, staging hoặc prod."
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
 
-    token = os.getenv("BACKSTAGE_TOKEN")
-    headers = {"Content-Type": "application/json"}
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
-
-    body = {
-        "templateRef": "template:default/node-js-template",
+    payload = {
+        "templateRef": "template:default/nodejs-service-template",
         "values": {
             "name": project_name,
-            "environment": environment,
         },
     }
 
     try:
-        # Gửi yêu cầu POST tới Backstage
-        response = requests.post(url, json=body, headers=headers)
-        
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+
         if response.status_code == 201:
-            data = response.json()
-            task_id = data.get("id")
-            return (f"✅ Đã gửi lệnh tạo dự án **{project_name}** ({environment}) thành công. "
-                    f"🔗 Link theo dõi: http://localhost:3000/create/tasks/{task_id}")
-        else:
-            # Trả về chi tiết lỗi nếu Backstage từ chối (401, 403, 400...)
-            return f"❌ Backstage từ chối (Mã {response.status_code}): {response.text}"
-            
+            task_id = response.json().get("id", "unknown")
+            return (
+                "✅ Đã tạo task scaffolder thành công! "
+                f"Project='{project_name}', env='{environment}', taskId='{task_id}'."
+            )
+
+        if response.status_code == 401:
+            return "❌ Lỗi xác thực Backstage. Vui lòng kiểm tra BACKSTAGE_TOKEN."
+
+        return (
+            "❌ Backstage từ chối xử lý. "
+            f"Status={response.status_code}, detail={response.text}"
+        )
+
     except Exception as e:
-        return f"🚨 Lỗi kết nối tới hệ thống Backstage: {str(e)}"
+        return f"🚨 Lỗi kết nối tới Backstage: {str(e)}"
+
+
+def get_scaffolder_task(task_id: str) -> dict:
+    """Fetch scaffolder task status and output."""
+    base_url = os.environ.get("BACKSTAGE_URL", "http://localhost:7007")
+    url = f"{base_url}/api/scaffolder/v2/tasks/{task_id}"
+
+    token = os.environ.get("BACKSTAGE_TOKEN")
+    if not token:
+        return {"error": "Thiếu BACKSTAGE_TOKEN trong môi trường."}
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        return {
+            "error": (
+                f"Status={response.status_code}, detail={response.text}"
+            )
+        }
+    except Exception as e:
+        return {"error": f"Lỗi kết nối tới Backstage: {str(e)}"}
+
+
+BACKSTAGE_TOOL_DEFINITION = {
+    "type": "function",
+    "function": {
+        "name": "trigger_backstage_template",
+        "description": "Sử dụng công cụ này ĐỂ TẠO DỰ ÁN MỚI hoặc CẤP PHÁT HẠ TẦNG khi người dùng cung cấp đủ tên dự án và môi trường.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "project_name": {
+                    "type": "string",
+                    "description": "Tên của dự án/component cần tạo (ví dụ: ga-khong-gay, hermosa-app)",
+                },
+                "environment": {
+                    "type": "string",
+                    "description": "Môi trường deploy hạ tầng, mặc định là 'dev' nếu người dùng không nói rõ.",
+                    "enum": ["dev", "staging", "prod"],
+                },
+            },
+            "required": ["project_name"],
+        },
+    },
+}

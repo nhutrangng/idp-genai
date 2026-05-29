@@ -1,12 +1,5 @@
 terraform {
-  
-  backend "s3" {
-    bucket       = "genai-idp-tf-state-bucket"
-    key          = "${{ values.name }}/terraform.tfstate"
-    region       = "ap-southeast-1"
-    encrypt      = true
-    use_lockfile = true
-  }
+  backend "s3" {}
 
   required_providers {
     aws = {
@@ -29,4 +22,8 @@ resource "aws_instance" "app_server" {
     ManagedBy   = "GenAI-IDP-Terraform"
     }
   
+}
+
+output "public_ip" {
+  value = aws_instance.app_server.public_ip
 }
